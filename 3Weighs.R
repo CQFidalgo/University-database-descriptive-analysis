@@ -8,7 +8,7 @@
 #========================================
 
 mis_paquetes <- c("readxl", "Hmisc", "plyr", "dplyr","srvyr","openxlsx")                  #Lista con los paquetes a instalar
-no_instalados <- mis_paquetes[!(mis_paquetes %in% installed.packages()[ , "Package"])]    #Comprueba qué paquetes no están instalados y crea una lista con sus nombres
+no_instalados <- mis_paquetes[!(mis_paquetes %in% installed.packages()[ , "Package"])]    #Comprueba quÃ© paquetes no estÃ¡n instalados y crea una lista con sus nombres
 if(length(no_instalados)) install.packages(no_instalados)                                 #Instala los paquetes no instalados
 rm(mis_paquetes,no_instalados)
 
@@ -20,7 +20,7 @@ library(srvyr)
 library(openxlsx) 
 
 datos <- read_excel("C:/Users/Cristina/Desktop/Practicas/EIL1718RESPUESTAS.xlsx")                   #Lee los resultados de las encuestas
-marco <- read_excel("C:/Users/Cristina/Desktop/Practicas/EIL1718_marco_informacion_auxiliar.xlsx")  #Lee el archivo de información auxiliar para extraer la variable sexo
+marco <- read_excel("C:/Users/Cristina/Desktop/Practicas/EIL1718_marco_informacion_auxiliar.xlsx")  #Lee el archivo de informaciÃ³n auxiliar para extraer la variable sexo
 
 marco$TIPO_ESTUDIO<-as.character(marco$TIPO_ESTUDIO)               #Convierte la variable TIPO_ESTUDIO a caracter
 marco["TIPO_ESTUDIO"][marco["TIPO_ESTUDIO"] == 5] <- "GRADO"       #Recodifica los 5 como grado en el marco
@@ -45,10 +45,10 @@ colnames(PesoV2)<-c("TIPO_RAMA","n_total ","n_muestra ","Pesos_V2") #Cambia los 
 datos<-merge(x = datos, y = PesoV2[ , c("TIPO_RAMA","Pesos_V2")], by = c("TIPO_RAMA"), all.x=TRUE) #Hace un leftjoin entre el dataframe de peso V1 y 
 rm(total_v2,PesoV2,n_muestra_v2)#Elimina las variables que no vamos a utilizar mas                                                                                                  #el dataframe de datos por la variable TiPO_RAMA
 
-#Añade la variable sexo al dataset
+#AÃ±ade la variable sexo al dataset
 datos<-merge(x = datos, y = marco[ , c("NIP_ALUMNO", "SEXO","CODIGO_ESTUDIO")], by = c("NIP_ALUMNO","CODIGO_ESTUDIO"), all.x=TRUE)
 
-#Añade las variables TIPO_SEXO y TIPO_CENTRO
+#AÃ±ade las variables TIPO_SEXO y TIPO_CENTRO
 datos$TIPO_SEXO   <- paste(datos$D_Tipo_Estudio,datos$SEXO,sep="_")
 datos$TIPO_CENTRO <- paste(datos$D_Tipo_Estudio,datos$Codigo_Centro,sep="_")
 
@@ -56,7 +56,7 @@ datos$TIPO_CENTRO <- paste(datos$D_Tipo_Estudio,datos$Codigo_Centro,sep="_")
 #Especifica los dominios a estudiar, estos deben ser variables del dataset
 dominio<-c("Codigo_Centro","TIPO_ESTUDIO","RAMA","TIPO_RAMA","COD_EST_CAM","TIPO_CENTRO","SEXO","TIPO_SEXO","TOTAL") #D_Tipo_Estudio?
 
-#Agrupo los nombres de las variables para que sea más cómodo y claro trabajar con ellas
+#Agrupo los nombres de las variables para que sea mÃ¡s cÃ³modo y claro trabajar con ellas
 #Variables categoricas
 preg_c<-c("P1G","P25","P3","P25_2","P21","P2","P2B","P2C","P4","P4A","P4B","P5",
           "P6","P7","P9A","P9B","P10","P11","P12","p13rama","p14funcion","P15","P15_2",
@@ -106,7 +106,7 @@ datos<-cbind(datos,T1,T2,T3,T4,T5)             #Introduce las variables de tasas
 detach(datos)                                  #Deja de usar el attach
 preg_nc<-c(preg_nc,"T1","T2","T3","T4","T5")   #Incluye las tasas en la lista de preguntas no categoricas
 
-#A continuación crea y recodifica cada una de las variables que deseamos añadir
+#A continuaciÃ³n crea y recodifica cada una de las variables que deseamos aÃ±adir
 #========================P10cod==============================
 datos$P10cod <- dplyr::recode(datos$P10, '1' = "1", 
                                          '2' = "3",
@@ -125,7 +125,7 @@ datos$P10cod <- dplyr::recode(datos$P10, '1' = "1",
 #===========================================================
 
 #=========================T3*p15==========================
-datos$T3_P15 <- paste(datos$T3,datos$P15,sep="_") #Junta la combinación de variables deseada separando sus valores con "_"
+datos$T3_P15 <- paste(datos$T3,datos$P15,sep="_") #Junta la combinaciÃ³n de variables deseada separando sus valores con "_"
 datos$T3_P15 <- dplyr::recode(datos$T3_P15, '1_NA' = "99", 
                                             '1_1' = "1",
                                             '1_2' = "2", 
@@ -195,22 +195,22 @@ datos$T3_P9_P9A <- dplyr::recode(datos$T3_P9_P9A, '1_NA_NA' = "99",
 preg_c<-c(preg_c,"P10cod","T3_P15","T3_P10cod","T3_P15_P10cod","T3_P11","T3_P9_P9A") #Inluye las nuevas preguntas en la lista de variables categoricas 
 
 
-wb <- createWorkbook()        #Crea el workbook (conjunto de datos que finalmente será el excel)
+wb <- createWorkbook()        #Crea el workbook (conjunto de datos que finalmente serÃ¡ el excel)
 
-#Cada iteración de este bucle son calculos para cada dominio, dentro de cada dominio hace calculos 
+#Cada iteraciÃ³n de este bucle son calculos para cada dominio, dentro de cada dominio hace calculos 
 #para variables categoricas y no categoricas y las graba en una hoja excel
 for(k in 1:(length(dominio))){ #Bucle que opera en cada dominio
   
   #Crea un dataframe para cada uno de los tipos de variables 
-  data_nc<-subset(datos[!(is.na(datos[[dominio[k]]])),],select=c(dominio[[k]],preg_nc,"Pesos","Pesos_V1","Pesos_V2")) #Dataframe con las variables no categóricas y sus pesos
-  data_c<-subset(datos[!(is.na(datos[[dominio[k]]])),],select=c(dominio[[k]],preg_c,"Pesos","Pesos_V1","Pesos_V2"))   #Dataframe con las variables categóricas y sus pesos
+  data_nc<-subset(datos[!(is.na(datos[[dominio[k]]])),],select=c(dominio[[k]],preg_nc,"Pesos","Pesos_V1","Pesos_V2")) #Dataframe con las variables no categÃ³ricas y sus pesos
+  data_c<-subset(datos[!(is.na(datos[[dominio[k]]])),],select=c(dominio[[k]],preg_c,"Pesos","Pesos_V1","Pesos_V2"))   #Dataframe con las variables categÃ³ricas y sus pesos
   
-  #===Media Categóricas====
+  #===Media CategÃ³ricas====
   DatosTotal <- data.frame()                                                                         #Crea el dataframe que va a ir rellenando con las medias que calcule
-  for(j in 1:(length(preg_c))){                                                                      #Bucle que hará los calculos correspondientes a cada pregunta de tipo categorico
+  for(j in 1:(length(preg_c))){                                                                      #Bucle que harÃ¡ los calculos correspondientes a cada pregunta de tipo categorico
     final2<-summarise(group_by(data_c[!(is.na(data_c[[preg_c[j]]])),], data_c[!(is.na(data_c[[preg_c[j]]])),][[dominio[[k]]]],data_c[!(is.na(data_c[[preg_c[j]]])),][[preg_c[j]]]),n = n()) #Calcula "n" para cada valor diferente de esa pregunta
     sumas_totales_SinPesos<-aggregate(final2$n, list(as.matrix(final2[,1])), sum)                    #Calcula la suma total de las n de cada pregunta
-    final2 <- merge(final2, sumas_totales_SinPesos, by.x = 1, by.y = 1, all.x = TRUE, all.y = TRUE)  #Añade n y las sumas totales al dataframe de variables categoricas
+    final2 <- merge(final2, sumas_totales_SinPesos, by.x = 1, by.y = 1, all.x = TRUE, all.y = TRUE)  #AÃ±ade n y las sumas totales al dataframe de variables categoricas
     final2$media_sinPesos<-final2$n/final2$x                                                         #Calcula la media sin pesos
     for(i in 1:length(unique(data_c[[dominio[[k]]]]))){
       datosH<-data_c[data_c[[dominio[[k]]]]==unique(sort(data_c[[dominio[[k]]]]))[i],] #Extrae los datos correspondientes a cada pregunta de ese dominio
@@ -243,7 +243,7 @@ for(k in 1:(length(dominio))){ #Bucle que opera en cada dominio
     if(exists("datosH2")){
     categorica<-as.data.frame(cbind(datosH2[,1],preg_c[j],datosH2[,2],final2$n,datosH2[,3],final2$media_sinPesos,datosH2[,4],datosH2[,5],"CAT")) #Guarda en el dataframe lo que incluiremos en el excel
     colnames(categorica)<-c(dominio[[k]],"Var","VarLevel","n","Mean_V0","Mean_SinPesos","Mean_V1","Mean_V2","TIPO_VAR") #Cambia los nombres de las variables
-    DatosTotal<-rbind(DatosTotal,categorica) #Incluye en datosTotal la información de la nueva pregunta que estaba contenida en categorica
+    DatosTotal<-rbind(DatosTotal,categorica) #Incluye en datosTotal la informaciÃ³n de la nueva pregunta que estaba contenida en categorica
     rm(final2,datosH,sumas_V0,sumas_V1,sumas_V2,suma_total_V0,suma_total_V1,suma_total_V2,datosH3,datosH_Media_V0,datosH_Media_V1,datosH_Media_V2,categorica,datosH2,sumas_totales_SinPesos)} #Borra las variables que no necesitaremos fuera del bucle
   }
   
@@ -254,16 +254,16 @@ for(k in 1:(length(dominio))){ #Bucle que opera en cada dominio
     data_V1<-ddply(data_nc,~data_nc[[dominio[[k]]]],function(data_nc)wtd.mean(data_nc[[preg_nc[i]]],data_nc$Pesos_V1,na.rm=TRUE)) #Calcula la media con los pesos V1
     data_V2<-ddply(data_nc,~data_nc[[dominio[[k]]]],function(data_nc)wtd.mean(data_nc[[preg_nc[i]]],data_nc$Pesos_V2,na.rm=TRUE)) #Calcula la media con los pesos V2
     
-    var<- rep(preg_nc[i],dim(data_V0[!(is.na(data_V0[,"V1"])),])[1]) #Vector que será la columna con el nombre de la variable
-    varLevel<- rep(NA,dim(data_V0[!(is.na(data_V0[,"V1"])),])[1]) #Vector que será la columna con el nivel de la variable
+    var<- rep(preg_nc[i],dim(data_V0[!(is.na(data_V0[,"V1"])),])[1]) #Vector que serÃ¡ la columna con el nombre de la variable
+    varLevel<- rep(NA,dim(data_V0[!(is.na(data_V0[,"V1"])),])[1]) #Vector que serÃ¡ la columna con el nivel de la variable
     final2<-summarise(group_by(data_nc[!(is.na(data_nc[[preg_nc[i]]])),], data_nc[!(is.na(data_nc[[preg_nc[i]]])),][[dominio[[k]]]]),n = n()) #Calculan para cada nivel de la variable
-    data2<-data.frame(data_V0[!(is.na(data_V0[,"V1"])),]$`data_nc[[dominio[[k]]]]`,var,varLevel,final2$n,na.exclude(data_V0$V1),na.exclude(data_sin_pesos$V1),na.exclude(data_V1$V1),na.exclude(data_V2$V1),"NUM") #Junta todas las columnas que añadira al excel
+    data2<-data.frame(data_V0[!(is.na(data_V0[,"V1"])),]$`data_nc[[dominio[[k]]]]`,var,varLevel,final2$n,na.exclude(data_V0$V1),na.exclude(data_sin_pesos$V1),na.exclude(data_V1$V1),na.exclude(data_V2$V1),"NUM") #Junta todas las columnas que aÃ±adira al excel
     
     colnames(data2)<-c(dominio[[k]],"Var","VarLevel","n","Mean_V0","Mean_SinPesos","Mean_V1","Mean_V2","TIPO_VAR") #Cambia el nombre de las columnas
-    DatosTotal<-rbind(DatosTotal,data2) #Añade los calculos de la pregunta actual al dataframe que teniamos con los resultados de las categoricas y no categoricas en ese dominio
+    DatosTotal<-rbind(DatosTotal,data2) #AÃ±ade los calculos de la pregunta actual al dataframe que teniamos con los resultados de las categoricas y no categoricas en ese dominio
   }
 
-  addWorksheet(wb, dominio[[k]]) #Añade una hoja al excel con el nombre de el dominio con el que estamos trabajando
+  addWorksheet(wb, dominio[[k]]) #AÃ±ade una hoja al excel con el nombre de el dominio con el que estamos trabajando
   writeDataTable(wb, dominio[[k]], DatosTotal) #Graba en el excel el dataframe DatosTotal en el que teniamos los calculos de las variables categoricas y no categoricas de ese dominio
   freezePane(wb,dominio[[k]], firstRow = TRUE) #Da formato a la primera fila del excel (formato tabla)
   setColWidths(wb,dominio[[k]],cols = 1:ncol(DatosTotal),widths = "auto") #Ajusta el ancho de las columnas del excel
